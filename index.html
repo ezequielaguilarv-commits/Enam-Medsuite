@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <title>ENAM MedSuite - MEDICINA PRO</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#1e1b4b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { color-scheme: dark; scroll-padding-top: env(safe-area-inset-top, 0px); }
+        :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); background:#0f172a; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background:#0f172a; }
+        header.sticky { top: env(safe-area-inset-top, 0px); }
+        body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); background:#020617; z-index:60; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- TOP HEADER -->
+    <header class="bg-slate-950 border-b border-slate-800 sticky z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-500/30">
+                    <span class="text-xl" aria-hidden="true">🩺</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white leading-tight">ENAM MedSuite</h1>
+                    <p class="text-xs font-semibold tracking-wider text-indigo-400 uppercase">MEDICINA PRO</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="flex items-center space-x-3">
+                <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm px-3 py-2 rounded-lg font-medium border border-slate-700 transition flex items-center space-x-2">
+                    <span class="text-indigo-400" aria-hidden="true">📥</span>
+                    <span class="hidden sm:inline">Cargar Backup</span> (JSON)
+                    <input type="file" id="jsonFileInputHeader" class="hidden" accept=".json" onchange="importJSONBackup(event)">
+                </label>
+                <button onclick="exportJSONBackup()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm px-3 py-2 rounded-lg font-medium shadow transition flex items-center space-x-2">
+                    <span class="" aria-hidden="true">💾</span>
+                    <span class="hidden sm:inline">Respaldar</span> (JSON)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <div class="bg-slate-950/80 border-b border-slate-800 backdrop-blur-md sticky z-40" style="top: calc(4rem + env(safe-area-inset-top, 0px))">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex space-x-2 sm:space-x-8 overflow-x-auto py-2 custom-scrollbar">
+                <button id="tabBtn-simulacro" onclick="switchTab('simulacro')" class="nav-tab text-indigo-400 border-indigo-500 border-b-2 font-medium px-3 py-2 text-sm whitespace-nowrap flex items-center space-x-2">
+                    <span class="" aria-hidden="true">📝</span>
+                    <span>Simulacros & Examen</span>
+                </button>
+                <button id="tabBtn-repaso" onclick="switchTab('repaso')" class="nav-tab text-slate-400 hover:text-slate-200 font-medium px-3 py-2 text-sm whitespace-nowrap flex items-center space-x-2">
+                    <span class="" aria-hidden="true">📖</span>
+                    <span>Repaso / Refuerzo</span>
+                </button>
+                <button id="tabBtn-metricas" onclick="switchTab('metricas')" class="nav-tab text-slate-400 hover:text-slate-200 font-medium px-3 py-2 text-sm whitespace-nowrap flex items-center space-x-2">
+                    <span class="" aria-hidden="true">📊</span>
+                    <span>Métricas & Progreso</span>
+                </button>
+                <button id="tabBtn-data" onclick="switchTab('data')" class="nav-tab text-slate-400 hover:text-slate-200 font-medium px-3 py-2 text-sm whitespace-nowrap flex items-center space-x-2">
+                    <span class="" aria-hidden="true">🗄️</span>
+                    <span>Data Repository</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: SIMULACROS & EXAMEN -->
+        <section id="tab-simulacro" class="tab-content block space-y-6">
+            
+            <!-- EXAM CONFIGURATOR PANEL -->
+            <div id="examConfigPanel" class="bg-slate-800/80 rounded-2xl p-6 border border-slate-700/60 shadow-xl">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="bg-indigo-500/20 p-3 rounded-xl border border-indigo-500/30">
+                        <span class="text-indigo-400 text-xl" aria-hidden="true">🎚️</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Configurador de Simulacro Personalizado</h2>
+                        <p class="text-xs text-slate-400">Personaliza la modalidad de examen, cantidad de respuestas por pregunta y módulos evaluados.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Module Selection -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">1. Módulo a Evaluar</label>
+                        <select id="configModule" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                            <option value="ALL">Todos los Módulos (Mezclado)</option>
+                            <option value="Medicina General">Medicina General</option>
+                            <option value="Nutrición Clínica" selected>Nutrición Clínica</option>
+                            <option value="Pediatría">Pediatría</option>
+                            <option value="Habilidades / Técnicas Pediátricas">Habilidades / Técnicas Pediátricas</option>
+                        </select>
+                    </div>
+
+                    <!-- Answer Mode Selection (1, 2, 3 correct answers) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">2. Modalidad de Selección</label>
+                        <select id="configAnswerMode" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                            <option value="0" selected>Automático (según cada pregunta)</option>
+                            <option value="2">Doble Selección (solo preguntas de 2 correctas)</option>
+                            <option value="1">Selección Única (solo preguntas de 1 correcta)</option>
+                            <option value="3">Múltiple Avanzado (solo preguntas de 3 correctas)</option>
+                        </select>
+                    </div>
+
+                    <!-- Number of Questions & Time -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">3. Preguntas & Tiempo</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="configQuestionCount" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 transition text-sm">
+                                <option value="10">10 Preguntas</option>
+                                <option value="20" selected>20 Preguntas</option>
+                                <option value="9999">Todas las disponibles</option>
+                            </select>
+                            <select id="configTimer" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 transition text-sm">
+                                <option value="15">15 Minutos</option>
+                                <option value="30" selected>30 Minutos</option>
+                                <option value="60">60 Minutos</option>
+                                <option value="0">Sin Límite</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="startExam()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center space-x-2">
+                        <span class="" aria-hidden="true">▶</span>
+                        <span>Iniciar Simulacro Ahora</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ACTIVE EXAM INTERFACE (Hidden by default) -->
+            <div id="activeExamArea" class="hidden space-y-6">
+                <!-- Exam Top Info bar -->
+                <div class="bg-slate-800/90 rounded-xl p-4 border border-slate-700 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <span id="examProgressBadge" class="bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-500/30">
+                            Pregunta 1 de 20
+                        </span>
+                        <span id="examModuleBadge" class="bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-lg">
+                            Nutrición Clínica
+                        </span>
+                    </div>
+
+                    <div class="flex items-center space-x-6">
+                        <div id="timerContainer" class="flex items-center space-x-2 text-indigo-400 font-mono font-bold text-lg">
+                            <span class="" aria-hidden="true">⏱️</span>
+                            <span id="timerDisplay">30:00</span>
+                        </div>
+                        <button id="finishBtn" onclick="finishExamPrompt()" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/40 font-medium text-xs px-3 py-1.5 rounded-lg transition">
+                            Finalizar Examen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Question Card -->
+                <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700/80 shadow-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs uppercase font-bold tracking-wider text-indigo-400">Caso Clínico / Enunciado</span>
+                        <span id="requiredAnswersNote" class="text-xs text-amber-400 font-medium bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">
+                            Selecciona EXACTAMENTE 2 opciones
+                        </span>
+                    </div>
+
+                    <h3 id="questionText" class="text-base sm:text-lg font-medium text-slate-100 leading-relaxed mb-6">
+                        <!-- Question text rendered dynamically -->
+                    </h3>
+
+                    <!-- Options Container -->
+                    <div id="optionsContainer" class="space-y-3">
+                        <!-- Options rendered dynamically -->
+                    </div>
+
+                    <!-- Feedback Box (Hidden during active test, shown after review) -->
+                    <div id="feedbackBox" class="hidden mt-6 p-4 rounded-xl bg-slate-900 border border-slate-700">
+                        <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2 mb-2">
+                            <span class="" aria-hidden="true">ℹ️</span>
+                            <span>Sustento Clínico & Justificación</span>
+                        </h4>
+                        <p id="feedbackText" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            <!-- Feedback rendered dynamically -->
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center justify-between">
+                    <button id="prevQBtn" onclick="navigateQuestion(-1)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center space-x-2">
+                        <span class="" aria-hidden="true">‹</span>
+                        <span>Anterior</span>
+                    </button>
+
+                    <div id="questionNavDots" class="flex space-x-1.5 overflow-x-auto max-w-xs sm:max-w-md py-1 custom-scrollbar">
+                        <!-- Dots rendered dynamically -->
+                    </div>
+
+                    <button id="nextQBtn" onclick="navigateQuestion(1)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2.5 rounded-xl transition flex items-center space-x-2">
+                        <span>Siguiente</span>
+                        <span class="" aria-hidden="true">›</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- EXAM RESULT SUMMARY (Hidden by default) -->
+            <div id="examResultPanel" class="hidden bg-slate-800/90 rounded-2xl p-6 border border-slate-700 text-center space-y-6">
+                <div class="w-20 h-20 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto text-3xl border border-indigo-500/30">
+                    <span class="" aria-hidden="true">🏆</span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Simulacro Finalizado</h2>
+                    <p class="text-sm text-slate-400 mt-1">Resumen de tu rendimiento metabólico y clínico.</p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <div class="text-2xl font-bold text-white" id="scorePercent">0%</div>
+                        <div class="text-xs text-slate-400">Puntaje Total</div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <div class="text-2xl font-bold text-emerald-400" id="correctCount">0</div>
+                        <div class="text-xs text-slate-400">Correctas</div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <div class="text-2xl font-bold text-rose-400" id="incorrectCount">0</div>
+                        <div class="text-xs text-slate-400">Incorrectas</div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <div class="text-2xl font-bold text-indigo-400" id="timeSpent">00:00</div>
+                        <div class="text-xs text-slate-400">Tiempo Usado</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center space-x-4 pt-4">
+                    <button onclick="reviewExamAnswers()" class="bg-slate-700 hover:bg-slate-600 text-white font-medium px-5 py-2.5 rounded-xl transition">
+                        Revisar Respuestas & Sustentos
+                    </button>
+                    <button onclick="resetToConfig()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl transition">
+                        Nuevo Simulacro
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- TAB 2: REPASO / REFUERZO -->
+        <section id="tab-repaso" class="tab-content hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-800 p-4 rounded-2xl border border-slate-700">
+                <div class="flex items-center space-x-3">
+                    <span class="text-indigo-400" aria-hidden="true">🔎</span>
+                    <span class="text-sm font-semibold text-slate-200">Filtrar Material por Módulo:</span>
+                </div>
+                <select id="reviewModuleFilter" onchange="renderReviewSection()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500">
+                    <option value="ALL">Todos los Módulos</option>
+                    <option value="Medicina General">Medicina General</option>
+                    <option value="Nutrición Clínica">Nutrición Clínica</option>
+                    <option value="Pediatría">Pediatría</option>
+                    <option value="Habilidades / Técnicas Pediátricas">Habilidades / Técnicas Pediátricas</option>
+                </select>
+            </div>
+
+            <!-- Flashcards Deck Grid -->
+            <div>
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+                    <span class="text-indigo-400" aria-hidden="true">🗂️</span>
+                    <span>Tarjetas de Memoria Clave (Flashcards)</span>
+                </h3>
+                <div id="flashcardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic Flashcards -->
+                </div>
+            </div>
+
+            <!-- Summary Notes Grid -->
+            <div class="pt-6">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+                    <span class="text-indigo-400" aria-hidden="true">📄</span>
+                    <span>Resúmenes Clínicos de Alto Rendimiento</span>
+                </h3>
+                <div id="summariesContainer" class="space-y-4">
+                    <!-- Dynamic Summaries -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: METRICAS & PROGRESO -->
+        <section id="tab-metricas" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center">
+                    <span class="text-3xl text-indigo-400 mb-2" aria-hidden="true">🧮</span>
+                    <div id="totalExamsTaken" class="text-3xl font-bold text-white">0</div>
+                    <div class="text-xs text-slate-400 mt-1">Simulacros Realizados</div>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center">
+                    <span class="text-3xl text-emerald-400 mb-2" aria-hidden="true">🎯</span>
+                    <div id="averageScore" class="text-3xl font-bold text-white">0%</div>
+                    <div class="text-xs text-slate-400 mt-1">Promedio General</div>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 text-center">
+                    <span class="text-3xl text-amber-400 mb-2" aria-hidden="true">🗄️</span>
+                    <div id="totalQuestionsInBank" class="text-3xl font-bold text-white">0</div>
+                    <div class="text-xs text-slate-400 mt-1">Preguntas en Banco</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-lg font-bold text-white mb-4">Desglose de Rendimiento por Módulo</h3>
+                <div id="moduleBreakdown" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <!-- TAB 4: DATA REPOSITORY (Import / Export JSON) -->
+        <section id="tab-data" class="tab-content hidden space-y-6">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="text-indigo-400 text-2xl" aria-hidden="true">📁</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Administración de Respaldos y Datos</h3>
+                        <p class="text-xs text-slate-400">Carga archivos estructurados en formato JSON procesados por el asistente para actualizar cualquiera de los 4 módulos.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-white mb-2 flex items-center space-x-2">
+                                <span class="text-indigo-400" aria-hidden="true">⬆️</span>
+                                <span>Importar Archivo JSON</span>
+                            </h4>
+                            <p class="text-xs text-slate-400 mb-4">Añade o fusiona nuevas preguntas, flashcards o resúmenes sin borrar la base actual.</p>
+                        </div>
+                        <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2.5 px-4 rounded-xl text-center transition">
+                            <span>Seleccionar Archivo JSON</span>
+                            <input type="file" class="hidden" accept=".json" onchange="importJSONBackup(event)">
+                        </label>
+                    </div>
+
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-white mb-2 flex items-center space-x-2">
+                                <span class="text-emerald-400" aria-hidden="true">⬇️</span>
+                                <span>Exportar Base Completa</span>
+                            </h4>
+                            <p class="text-xs text-slate-400 mb-4">Guarda una copia de seguridad en tu equipo para cargarla luego o respaldarla en Google Drive.</p>
+                        </div>
+                        <button onclick="exportJSONBackup()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-medium text-sm py-2.5 px-4 rounded-xl text-center transition">
+                            Descargar Backup JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // -------------------------------------------------------------
+        // DATABASE: EXACT 40 QUESTIONS FROM NUTRITION FILE
+        // -------------------------------------------------------------
+        const defaultQuestions = [
+            {
+                id: 1,
+                module: "Nutrición Clínica",
+                question: "1. En relación con los cambios metabólicos y fisiológicos del envejecimiento en el adulto mayor, ¿cuáles de las siguientes afirmaciones son correctas?",
+                options: [
+                    "A) La tasa metabólica basal (TMB) disminuye aproximadamente entre 2 y 3% por cada década después de los 30 años.",
+                    "B) Se produce un incremento progresivo y uniforme de la masa magra muscular en detrimento del tejido adiposo.",
+                    "C) Alrededor de los 40 años se observa una redistribución de la grasa corporal, aumentando el tejido adiposo visceral.",
+                    "D) El gasto energético total (GET) se eleva drásticamente debido a un aumento sostenido de la termogénesis inducida por los alimentos.",
+                    "E) El estrés crónico eleva los niveles de cortisol, estimulando la acumulación de grasa visceral."
+                ],
+                correct: [0, 2, 4], // A, C, E
+                rationale: "Opciones correctas: A, C y E. La TMB disminuye con la edad, hay redistribución visceral de grasa y el cortisol elevado por estrés promueve adiposidad visceral."
+            },
+            {
+                id: 2,
+                module: "Nutrición Clínica",
+                question: "2. Respecto a la distribución calórica y macronutrientes en el adulto sano y adulto mayor, señale las dos proposiciones correctas:",
+                options: [
+                    "A) El rango porcentual adecuado de distribución del VCT para los carbohidratos en el adulto es de 45–55%.",
+                    "B) Los ácidos grasos saturados (como el esteárico) elevan siempre de forma directa el colesterol LDL hepático.",
+                    "C) Los ácidos grasos omega-3 de cadena larga (EPA y DHA) disminuyen los niveles de citocinas proinflamatoria como TNF-α e IL-6.",
+                    "D) El efecto térmico de los alimentos (TEF) es mayor en los lípidos que en las proteínas.",
+                    "E) La recomendación estándar diaria de proteínas para el adulto sano oscila entre 0.8 y 1.2 g/kg/día."
+                ],
+                correct: [0, 2], // A, C
+                rationale: "Opciones correctas: A y C. Los carbohidratos representan 45–55% del VCT y los omega-3 (EPA/DHA) poseen potente efecto antiinflamatorio regulando TNF-α e IL-6."
+            },
+            {
+                id: 3,
+                module: "Nutrición Clínica",
+                question: "3. En el análisis del crecimiento físico y la composición corporal en la etapa preescolar (2 a 5 años), ¿cuáles son los enunciados correctos?",
+                options: [
+                    "A) La ganancia de peso media esperada es de 2 a 3 kg/año y la ganancia de talla de 5 a 7 cm/año.",
+                    "B) Se produce un crecimiento acelerado donde el peso se triplica y la talla aumenta un 50% cada año.",
+                    "C) El IMC alcanza su valor mínimo y comienza a ascender en el llamado rebote de adiposidad (5 a 7 años).",
+                    "D) Un rebote de adiposidad precoz antes de los 5 años es un factor protector contra la obesidad en la adolescencia.",
+                    "E) Hacia los 3 años, el aparato digestivo y la función renal alcanzan una madurez funcional prácticamente equivalente a la del adulto."
+                ],
+                correct: [0, 2], // A, C
+                rationale: "Opciones correctas: A y C. En preescolares la ganancia de peso es 2-3 kg/año y talla 5-7 cm/año; el IMC desciende hasta su mínimo previo al rebote adiposo."
+            },
+            {
+                id: 4,
+                module: "Nutrición Clínica",
+                question: "4. Acerca de los fenómenos conductuales y nutricionales en el preescolar, señale las dos afirmaciones verdaderas:",
+                options: [
+                    "A) La neofobia alimentaria es un rechazo a probar alimentos nuevos, extremadamente común entre los 2 y 5 años.",
+                    "B) Para manejar la neofobia alimentaria se debe obligar o castigar al niño hasta que consuma la porción completa.",
+                    "C) El apetito variable y caprichoso es secundario a la desaceleración fisiológica del crecimiento lineal.",
+                    "D) El desayuno debe aportar un 5% del VCT diario para evitar la hipoglucemia matutina.",
+                    "E) La exposición repetida y neutral de un alimento nuevo entre 10 y 15 veces favorece su aceptación progresiva."
+                ],
+                correct: [0, 4], // A, E
+                rationale: "Opciones correctas: A y E. La neofobia es fisiológica entre los 2-5 años y la exposición repetida neutral (10-15 veces) logra la aceptación del alimento."
+            },
+            {
+                id: 5,
+                module: "Nutrición Clínica",
+                question: "5. En relación con las recomendaciones dietéticas y micronutrientes en preescolares y escolares, marque las dos opciones correctas:",
+                options: [
+                    "A) La fórmula práctica para calcular la fibra dietética mínima en mayores de 2 años es: Edad en años + 5 a 10 g/día.",
+                    "B) El consumo excesivo de leche entera (mayor a 500 ml/día) protege al niño frente al desarrollo de anemia ferropénica.",
+                    "C) El DHA representa cerca del 50% de las grasas del cerebro, siendo fundamental para el desarrollo cerebral y visual.",
+                    "D) El requerimiento de hierro en escolares disminuye drásticamente a 1 mg/día debido al cese de la eritropoyesis.",
+                    "E) El zinc cumple un papel fundamental en el crecimiento celular, la respuesta inmune y la maduración tisular."
+                ],
+                correct: [0, 2], // A, C
+                rationale: "Opciones correctas: A y C. La fórmula de fibra en >2 años es 'Edad + 5 a 10 g/día' y el DHA es estructuralmente determinante en el encéfalo."
+            },
+            {
+                id: 6,
+                module: "Nutrición Clínica",
+                question: "6. Respecto a la actividad física, el sueño y la prevención de obesidad en escolares, señale las dos proposiciones correctas:",
+                options: [
+                    "A) La OMS recomienda un tiempo mínimo de 60 minutos diarios de actividad física moderada a vigorosa.",
+                    "B) El tiempo sedentario frente a pantallas debe limitarse a un máximo de 2 horas al día.",
+                    "C) Las horas de sueño recomendadas para los escolares (6 a 12 años) son de 4 a 6 horas diarias.",
+                    "D) La obesidad infantil se asocia tempranamente con complicaciones como dislipemia, insulinoresistencia y esteatosis hepática.",
+                    "E) El comedor escolar permite el uso frecuente y diario de fritos y precocinados para asegurar densidad calórica."
+                ],
+                correct: [0, 3], // A, D
+                rationale: "Opciones correctas: A y D. La OMS sugiere al menos 60 min/día de ejercicio moderado-vigoroso y la obesidad pediátrica causa precozmente hígado graso y resistencia insulínica."
+            },
+            {
+                id: 7,
+                module: "Nutrición Clínica",
+                question: "7. Sobre la fisiología de la adolescencia y el dimorfismo sexual en el crecimiento, identifique las dos afirmaciones correctas:",
+                options: [
+                    "A) La adolescencia comprende el periodo cronológico entre los 10 y 19 años según la OMS.",
+                    "B) El estirón puberal en las mujeres se inicia de manera más tardía (12-13 años) que en los varones.",
+                    "C) En los varones, bajo el influjo de la testosterona, predomina una notable aceleración en el depósito de masa magra y tejido óseo.",
+                    "D) Las mujeres experimentan una reducción drástica de su masa grasa corporal hasta llegar al 5% del peso total.",
+                    "E) El parámetro clínico de referencia prioritario sobre la edad cronológica para evaluar requerimientos es el estadio de maduración sexual de Tanner."
+                ],
+                correct: [2, 4], // C, E
+                rationale: "Opciones correctas: C y E. La testosterona promueve masa magra y ósea en varones; los estadios de Tanner evalúan la madurez biológica mejor que la edad cronológica."
+            },
+            {
+                id: 8,
+                module: "Nutrición Clínica",
+                question: "8. Con respecto a los requerimientos nutricionales específicos y micronutrientes críticos en la adolescencia, señale las dos correctas:",
+                options: [
+                    "A) El requerimiento diario de calcio se incrementa a 1200 – 1300 mg/día para asegurar el pico de masa ósea.",
+                    "B) Las necesidades de hierro son mayores en mujeres adolescentes debido a la compensación por las pérdidas menstruales.",
+                    "C) El consumo de proteínas debe restringirse al 5% del VCT para evitar la sobrecarga renal aguda.",
+                    "D) La vitamina D (600 UI/día) es prescindible si el adolescente consume carbohidratos complejos.",
+                    "E) Los folatos (vitamina B9) son requeridos para la síntesis de ácidos nucleicos y la replicación celular rápida."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. El requerimiento de calcio asciende a 1200-1300 mg/día para mineralización ósea y las mujeres requieren más hierro tras la menarquia."
+            },
+            {
+                id: 9,
+                module: "Nutrición Clínica",
+                question: "9. En relación con los Trastornos de la Conducta Alimentaria (TCA) y patologías en adolescentes, indique las dos proposiciones verdaderas:",
+                options: [
+                    "A) La Anorexia Nerviosa se caracteriza por restricción severa de la ingesta, miedo al peso y presencia clásica de amenorrea secundaria.",
+                    "B) La Bulimia Nerviosa cursa con episodios de atracones seguidos de conductas compensatorias inapropiadas como vómitos o purgas.",
+                    "C) El Trastorno por Atracón incluye siempre conductas purgativas intensas y pérdida extrema de peso corporal.",
+                    "D) Un adolescente con obesidad establecida tiene un riesgo menor al 5% de mantenerla en la edad adulta.",
+                    "E) La deficiencia crónica de hierro en mujeres adolescentes genera anemia ferropénica y puede comprometer el rendimiento cognitivo."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. La Anorexia cursa con restricción e imagen corporal alterada; la Bulimia se define por la triada atracón-purga-miedo al peso."
+            },
+            {
+                id: 10,
+                module: "Nutrición Clínica",
+                question: "10. En el ámbito del diseño de menús y hábitos alimentarios escolares y juveniles, señale las dos afirmaciones correctas:",
+                options: [
+                    "A) El desayuno es una comida clave que debe aportar aproximadamente el 25% del VCT para asegurar el rendimiento escolar.",
+                    "B) El 'Método del Plato' para el almuerzo sugiere un 50% de proteínas y un 25% de verduras.",
+                    "C) Se debe priorizar el uso de aceite de oliva virgen o girasol alto oleico en la preparación de alimentos.",
+                    "D) Los zumos comerciales y refrescos azucarados son opciones excelentes para reemplazar el agua en las loncheras.",
+                    "E) La rotación de menús en comedores escolares debe planificarse en ciclos de 4 a 6 semanas para garantizar variedad."
+                ],
+                correct: [2, 4], // C, E
+                rationale: "Opciones correctas: C y E. Se debe priorizar grasas insaturadas de calidad (aceite de oliva) y rotar menús en ciclos de 4-6 semanas."
+            },
+            {
+                id: 11,
+                module: "Nutrición Clínica",
+                question: "11. Respecto a la regulación hormonal y metabólica del apetito y la glucosa en adultos y niños, indique las dos verdaderas:",
+                options: [
+                    "A) La insulina facilita la captación periférica de glucosa en el tejido muscular y adiposo mediante el transportador GLUT-4.",
+                    "B) Los azúcares libres estimulan el circuito de recompensa dopaminérgica a nivel del sistema nervioso central, favoreciendo la hiperfagia.",
+                    "C) El transportador GLUT-2 es el principal receptor dependiente de insulina en el miocardio.",
+                    "D) El glucagón estimula la utilización periférica masiva de glucosa inhibiendo la gluconeogénesis hepática.",
+                    "E) El estrés crónico eleva el cortisol, promoviendo resistencia insulínica y acumulación de grasa visceral."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. GLUT-4 es el transportador dependiente de insulina en músculo/grasa; los azúcares refinados activan vías dopaminérgicas meso-límbicas."
+            },
+            {
+                id: 12,
+                module: "Nutrición Clínica",
+                question: "12. Acerca de la calidad proteica y los aminoácidos en la nutrición pediátrica y adulta, señale las dos correctas:",
+                options: [
+                    "A) El aminoácido leucina actúa como activador clave de la vía mTOR, estimulando la síntesis proteica muscular.",
+                    "B) El índice DIAAS evalúa la digestibilidad ileal verdadera de los aminoácidos indispensables.",
+                    "C) Las proteínas de origen vegetal siempre superan en valor biológico y perfil de aminoácidos esenciales a las de origen animal.",
+                    "D) En preescolares y escolares se recomienda que al menos el 25% de las proteínas sean de bajo valor biológico exclusivo.",
+                    "E) Las proteínas cumplen funciones esenciales en la síntesis tisular, el desarrollo enzimático y el mantenimiento de la masa magra."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. La leucina es el gatillo aminoacídico de mTOR; DIAAS es el método estándar FAO para evaluar digestibilidad ileal."
+            },
+            {
+                id: 13,
+                module: "Nutrición Clínica",
+                question: "13. En cuanto a los lípidos y su perfil lipídico en la dieta pediátrica y del adulto, marque las dos afirmaciones correctas:",
+                options: [
+                    "A) Los ácidos grasos trans deben representar menos del 1% del Valor Calórico Total (VCT).",
+                    "B) El colesterol dietético recomendado en la infancia y adultez debe superar obligatoriamente los 600 mg/día.",
+                    "C) Los ácidos grasos poliinsaturados (AGPI) deben aportar entre el 5 y 8% del VCT, garantizando el balance omega-3 y omega-6.",
+                    "D) El ácido esteárico es un ácido graso saturado que eleva fuertemente el colesterol LDL en comparación con todos los demás saturados.",
+                    "E) Las grasas totales en la infancia preescolar y escolar deben representar entre el 30 y 35% del VCT."
+                ],
+                correct: [0, 2], // A, C
+                rationale: "Opciones correctas: A y C. Los ácidos grasos trans deben ser <1% VCT para prevenir aterogénesis; los AGPI deben cubrir entre 5 y 8% VCT."
+            },
+            {
+                id: 14,
+                module: "Nutrición Clínica",
+                question: "14. Sobre el diagnóstico y repercusiones clínicas de la malnutrición por exceso (obesidad infantil y juvenil), señale las dos correctas:",
+                options: [
+                    "A) La esteatosis hepática no alcohólica (EHGNA) es una complicación metabólica documentada de la obesidad infantil.",
+                    "B) La resistencia a la insulina y el hiperinsulinismo se asocian de forma directa con la acumulación de grasa visceral.",
+                    "C) La obesidad infantil protege al paciente frente a alteraciones ortopédicas como la epifisiólisis de cabeza femoral.",
+                    "D) Los adolescentes con obesidad presentan un riesgo menor al 10% de desarrollar diabetes mellitus tipo 2.",
+                    "E) El sedentarismo y el consumo elevado de productos ultraprocesados son factores etiológicos capitales en la obesidad juvenil."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. La esteatosis hepática metabólica es frecuente en obesidad pediátrica y el tejido adiposo visceral promueve insulinoresistencia."
+            },
+            {
+                id: 15,
+                module: "Nutrición Clínica",
+                question: "15. Respecto a la evaluación y requerimientos energéticos según fórmulas y grupos etarios, marque las dos correctas:",
+                options: [
+                    "A) El Gasto Energético Total (GET) se compone principalmente de la Tasa Metabólica Basal, el efecto térmico de los alimentos, la actividad física y el coste del crecimiento.",
+                    "B) Las fórmulas de la OMS para el cálculo del GEB consideran variables fundamentales como el peso corporal en kilogramos y el sexo.",
+                    "C) El coste del crecimiento es un factor energético exclusivo de la etapa geriátrica y del adulto mayor.",
+                    "D) Los requerimientos energéticos en la adolescencia varían sustancialmente entre varones (2500-3000 kcal/día) y mujeres (2100-2400 kcal/día).",
+                    "E) El metabolismo basal en el adulto aumenta de forma lineal un 10% por cada año cumplido a partir de los 40."
+                ],
+                correct: [1, 3], // B, D
+                rationale: "Opciones correctas: B y D. Las fórmulas OMS utilizan peso y sexo; la adolescencia muestra diferencias marcadas por dimorfismo de masa corporal."
+            },
+            {
+                id: 16,
+                module: "Nutrición Clínica",
+                question: "16. En relación con las vitaminas liposolubles y su implicancia clínica en pediatría y adulto, señale las dos afirmaciones correctas:",
+                options: [
+                    "A) La deficiencia de Vitamina A puede manifestarse con xeroftalmía, ceguera nocturna y mayor vulnerabilidad a infecciones.",
+                    "B) La Vitamina D es sintetizada en la piel por exposición a la radiación ultravioleta B y actúa facilitando la absorción intestinal de calcio y fósforo.",
+                    "C) La deficiencia severa de Vitamina D en la infancia produce el engrosamiento precoz y esclerosis de la matriz ósea (osteopetrosis congénita).",
+                    "D) Las hortalizas de color naranja e hígado son fuentes dietéticas clave de retinoides y precursores de Vitamina A.",
+                    "E) La Vitamina D se almacena exclusivamente en el tejido óseo cortical y no puede causar hipervitaminosis bajo ninguna circunstancia."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. La deficiencia de vitamina A altera el epitelio ocular (xeroftalmía) y la vitamina D cutánea regula la homeostasis de calcio-fósforo."
+            },
+            {
+                id: 17,
+                module: "Nutrición Clínica",
+                question: "17. Acerca de los signos clínicos asociados a deficiencias de micronutrientes específicos, indique las dos verdaderas:",
+                options: [
+                    "A) La deficiencia de hierro produce anemia microcítica hipocrómica asociada a alteraciones en el neurodesarrollo y menor rendimiento escolar.",
+                    "B) La falta de yodo durante la gestación y la infancia temprana es una de las causas prevenibles más importantes de retraso mental en el mundo.",
+                    "C) La deficiencia severa de zinc se asocia clínicamente con una rápida hipertrofia muscular y pubertad precoz.",
+                    "D) La carencia de vitamina B12 genera alteraciones neurológicas, desmielinización y neuropatías periféricas.",
+                    "E) La deficiencia de calcio en la edad escolar incrementa de forma inmediata el riesgo de gota aguda por hiperuricemia."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. El déficit de hierro genera anemia microcítica con impacto cognitivo; el déficit de yodo es la causa prevenible #1 de daño cerebral."
+            },
+            {
+                id: 18,
+                module: "Nutrición Clínica",
+                question: "18. Sobre los hábitos de hidratación y el consumo de bebidas en la infancia y adolescencia, señale las dos correctas:",
+                options: [
+                    "A) El agua pura debe ser la bebida principal y de elección para la hidratación en todas las etapas pediátricas.",
+                    "B) El consumo habitual de bebidas energéticas con cafeína estimula de forma inocua el sistema nervioso central de los escolares.",
+                    "C) Los refrescos azucarados aportan calorías vacías que contribuyen al desarrollo de caries dental y sobrepeso.",
+                    "D) Las bebidas isotónicas son indispensables para niños sedentarios durante las clases teóricas en el aula.",
+                    "E) El reemplazo de bebidas azucaradas por agua o infusiones sin azúcar es una estrategia clave en la prevención de síndrome metabólico."
+                ],
+                correct: [0, 2], // A, C
+                rationale: "Opciones correctas: A y C. El agua simple debe ser el vehículo primario de hidratación; las bebidas azucaradas causan caries, sobrepeso y adiposidad."
+            },
+            {
+                id: 19,
+                module: "Nutrición Clínica",
+                question: "19. En cuanto a la evaluación de la maduración sexual y su impacto nutricional en la adolescencia, marque las dos correctas:",
+                options: [
+                    "A) Los estadios de Tanner evalúan los caracteres sexuales secundarios y permiten correlacionar el momento biológico con los requerimientos nutricionales.",
+                    "B) El pico de velocidad de crecimiento en talla en las mujeres ocurre típicamente alrededor de los 12 años (estadio Tanner II-III).",
+                    "C) En los varones, el pico de velocidad de crecimiento se presenta de forma más temprana que en las niñas, hacia los 10 años de edad.",
+                    "D) La menarquía en las mujeres marca el inicio absoluto del estirón puberal y el crecimiento óseo longitudinal.",
+                    "E) Las hormonas esteroideas sexuales determinan el dimorfismo en la composición corporal final entre varones y mujeres."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. Tanner refleja desarrollo biológico tisular; en mujeres el pico del estirón sucede en Tanner II-III (~12 años)."
+            },
+            {
+                id: 20,
+                module: "Nutrición Clínica",
+                question: "20. Con respecto a las recomendaciones de fibra dietética y salud gastrointestinal, señale las dos afirmaciones verdaderas:",
+                options: [
+                    "A) Una ingesta adecuada de fibra favorece el peristaltismo intestinal, previene el estreñimiento crónico y mejora la saciedad.",
+                    "B) Los alimentos con bajo índice glucémico y ricos en fibra soluble ayudan a estabilizar la glucemia postprandial.",
+                    "C) La fibra dietética se absorbe en su totalidad en el duodeno y se convierte en glucógeno hepático.",
+                    "D) Las legumbres, frutas enteras y cereales integrales son excelentes fuentes naturales de fibra dietética.",
+                    "E) El exceso masivo de fibra en lactantes previene cualquier tipo de carencia nutricional de micronutrientes."
+                ],
+                correct: [0, 1], // A, B
+                rationale: "Opciones correctas: A y B. La fibra aumenta el bolo fecal y retrasa el vaciamiento gástrico atenando la respuesta glucémica postprandial."
+            }
+        ];
+
+        // -------------------------------------------------------------
+        // NOTA: el banco real tiene las preguntas 1-20 de Nutrición Clínica.
+        // Las preguntas 21-40 eran marcadores de posición ("Opción clínica A...")
+        // y se eliminaron para no contaminar los simulacros. Cárgalas con un JSON
+        // desde la pestaña "Data Repository".
+        // -------------------------------------------------------------
+
+        const MODULES = ["Medicina General", "Nutrición Clínica", "Pediatría", "Habilidades / Técnicas Pediátricas"];
+
+        // ---------- Utilidades ----------
+        function escapeHtml(str) {
+            return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        function formatTime(totalSec) {
+            const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+            const s = (totalSec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        // ---------- Almacenamiento seguro ----------
+        // localStorage puede estar bloqueado (vista previa en iframe, modo privado, etc.).
+        // Antes eso lanzaba una excepción y la app no arrancaba.
+        const memoryStore = {};
+        const safeStorage = {
+            get(key) {
+                try { return window.localStorage.getItem(key); }
+                catch (e) { return key in memoryStore ? memoryStore[key] : null; }
+            },
+            set(key, val) {
+                try { window.localStorage.setItem(key, val); }
+                catch (e) { memoryStore[key] = val; }
+            }
+        };
+
+        // APP STATE
+        let appData = {
+            questions: [...defaultQuestions],
+            flashcards: [
+                { id: 1, module: "Nutrición Clínica", title: "Fórmula de Fibra en Pediatría", body: "En niños >2 años: Edad (años) + 5 a 10 gramos/día." },
+                { id: 2, module: "Nutrición Clínica", title: "Deficit de Yodo Gestacional", body: "Principal causa PREVENIBLE de retraso mental y daño cerebral en el desarrollo fetal e infantil." },
+                { id: 3, module: "Nutrición Clínica", title: "Vía mTOR y Leucina", body: "La Leucina es el aminoácido clave que activa la vía mTOR para la síntesis de proteína muscular." }
+            ],
+            summaries: [
+                { id: 1, module: "Nutrición Clínica", title: "Requerimientos Micronutricionales en la Adolescencia", content: "El estirón puberal exige incrementos drásticos en Calcio (1200-1300 mg/d) para la masa ósea y Hierro en mujeres tras la menarquia para suplir pérdidas catameniales." }
+            ],
+            examHistory: []
+        };
+
+        let currentExam = {
+            active: false,
+            reviewing: false,
+            questions: [],
+            userAnswers: {},
+            currentIndex: 0,
+            modeSetting: 0,
+            timerSeconds: 0,
+            startedAt: 0,
+            timerInterval: null
+        };
+
+        // INITIALIZATION
+        window.addEventListener('load', function() {
+            loadLocalStorageData();
+            renderReviewSection();
+            updateMetricsView();
+        });
+
+        // TAB SWITCHING
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('text-indigo-400', 'border-indigo-500', 'border-b-2');
+                el.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('text-indigo-400', 'border-indigo-500', 'border-b-2');
+        }
+
+        // Cantidad de opciones a marcar para una pregunta
+        function requiredFor(q) {
+            if (currentExam.modeSetting > 0) return currentExam.modeSetting;
+            return (q.correct && q.correct.length) ? q.correct.length : 1;
+        }
+
+        // START EXAM LOGIC
+        function startExam() {
+            const mod = document.getElementById('configModule').value;
+            const ansMode = parseInt(document.getElementById('configAnswerMode').value); // 0 = automático
+            const count = parseInt(document.getElementById('configQuestionCount').value);
+            const timeMins = parseInt(document.getElementById('configTimer').value);
+
+            let filtered = appData.questions;
+            if (mod !== 'ALL') filtered = filtered.filter(q => q.module === mod);
+            // Si se fija una modalidad, solo entran preguntas con ese número de respuestas correctas
+            if (ansMode > 0) filtered = filtered.filter(q => q.correct && q.correct.length === ansMode);
+
+            if (filtered.length === 0) {
+                alert("No hay preguntas que cumplan esa combinación de módulo y modalidad. Prueba con 'Automático' o importa un backup JSON con más preguntas.");
+                return;
+            }
+
+            // Mezcla (Fisher-Yates) y recorte
+            const shuffled = [...filtered];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+
+            clearInterval(currentExam.timerInterval);
+            currentExam = {
+                active: true,
+                reviewing: false,
+                questions: selected,
+                userAnswers: {},
+                currentIndex: 0,
+                modeSetting: ansMode,
+                timerSeconds: timeMins * 60,
+                startedAt: Date.now(),
+                timerInterval: null
+            };
+
+            document.getElementById('examConfigPanel').classList.add('hidden');
+            document.getElementById('examResultPanel').classList.add('hidden');
+            document.getElementById('activeExamArea').classList.remove('hidden');
+            document.getElementById('finishBtn').innerText = 'Finalizar Examen';
+
+            if (timeMins > 0) {
+                document.getElementById('timerContainer').classList.remove('hidden');
+                document.getElementById('timerDisplay').innerText = formatTime(currentExam.timerSeconds);
+                startTimer();
+            } else {
+                document.getElementById('timerContainer').classList.add('hidden');
+            }
+
+            renderCurrentQuestion();
+        }
+
+        // RENDER CURRENT QUESTION
+        function renderCurrentQuestion() {
+            const q = currentExam.questions[currentExam.currentIndex];
+            const reviewing = currentExam.reviewing;
+            const need = requiredFor(q);
+
+            document.getElementById('examProgressBadge').innerText = `Pregunta ${currentExam.currentIndex + 1} de ${currentExam.questions.length}`;
+            document.getElementById('examModuleBadge').innerText = q.module;
+            document.getElementById('questionText').innerText = q.question;
+            document.getElementById('requiredAnswersNote').innerText = reviewing
+                ? 'Modo revisión'
+                : `Selecciona EXACTAMENTE ${need} opción(es)`;
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            const selectedForThisQ = currentExam.userAnswers[q.id] || [];
+
+            q.options.forEach((optStr, idx) => {
+                const isSelected = selectedForThisQ.includes(idx);
+                const isCorrect = (q.correct || []).includes(idx);
+                const btn = document.createElement('div');
+
+                let cls, boxCls = '', icon = '';
+                if (reviewing) {
+                    if (isCorrect) {
+                        cls = 'bg-emerald-600/15 border-emerald-500 text-white';
+                        boxCls = 'bg-emerald-600 border-emerald-500';
+                        icon = '<span class="text-xs text-white" aria-hidden="true">✓</span>';
+                    } else if (isSelected) {
+                        cls = 'bg-rose-600/15 border-rose-500 text-white';
+                        boxCls = 'bg-rose-600 border-rose-500';
+                        icon = '<span class="text-xs text-white" aria-hidden="true">✕</span>';
+                    } else {
+                        cls = 'bg-slate-900/60 border-slate-700/80 text-slate-400';
+                        boxCls = 'border-slate-600';
+                    }
+                    btn.className = `p-4 rounded-xl border flex items-center justify-between ${cls}`;
+                } else {
+                    cls = isSelected ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-slate-900/60 border-slate-700/80 text-slate-300 hover:bg-slate-700/40';
+                    boxCls = isSelected ? 'bg-indigo-600 border-indigo-500' : 'border-slate-600';
+                    icon = isSelected ? '<span class="text-xs text-white" aria-hidden="true">✓</span>' : '';
+                    btn.className = `p-4 rounded-xl border transition cursor-pointer flex items-center justify-between ${cls}`;
+                    btn.onclick = () => toggleOptionSelect(q.id, idx);
+                }
+
+                btn.innerHTML = `
+                    <span class="text-sm font-medium">${escapeHtml(optStr)}</span>
+                    <div class="w-5 h-5 shrink-0 ml-3 rounded-md border flex items-center justify-center ${boxCls}">${icon}</div>
+                `;
+                container.appendChild(btn);
+            });
+
+            renderNavDots();
+
+            const fb = document.getElementById('feedbackBox');
+            if (reviewing) {
+                const ok = selectedForThisQ.length === (q.correct || []).length && selectedForThisQ.every(v => (q.correct || []).includes(v));
+                const verdict = selectedForThisQ.length === 0 ? 'Sin responder' : (ok ? '✔ Respuesta correcta' : '✘ Respuesta incorrecta');
+                document.getElementById('feedbackText').innerText = `${verdict}. ${q.rationale || ''}`;
+                fb.classList.remove('hidden');
+            } else {
+                fb.classList.add('hidden');
+            }
+        }
+
+        // TOGGLE OPTION SELECTION
+        function toggleOptionSelect(qId, optIndex) {
+            if (currentExam.reviewing) return;
+            const q = currentExam.questions[currentExam.currentIndex];
+            const need = requiredFor(q);
+
+            if (!currentExam.userAnswers[qId]) currentExam.userAnswers[qId] = [];
+            const arr = currentExam.userAnswers[qId];
+            const existsIdx = arr.indexOf(optIndex);
+
+            if (existsIdx > -1) {
+                arr.splice(existsIdx, 1);
+            } else {
+                if (arr.length >= need) arr.shift();
+                arr.push(optIndex);
+            }
+            renderCurrentQuestion();
+        }
+
+        // NAVIGATION
+        function navigateQuestion(direction) {
+            const newIdx = currentExam.currentIndex + direction;
+            if (newIdx >= 0 && newIdx < currentExam.questions.length) {
+                currentExam.currentIndex = newIdx;
+                renderCurrentQuestion();
+            }
+        }
+
+        function renderNavDots() {
+            const container = document.getElementById('questionNavDots');
+            container.innerHTML = '';
+            currentExam.questions.forEach((q, idx) => {
+                const sel = currentExam.userAnswers[q.id] || [];
+                const isAnswered = sel.length > 0;
+                const isCurrent = idx === currentExam.currentIndex;
+                let cls;
+                if (currentExam.reviewing) {
+                    const ok = sel.length === q.correct.length && sel.every(v => q.correct.includes(v));
+                    cls = ok ? 'bg-emerald-700/40 text-emerald-300 border border-emerald-500/40'
+                             : 'bg-rose-700/30 text-rose-300 border border-rose-500/40';
+                    if (isCurrent) cls += ' ring-2 ring-indigo-400';
+                } else {
+                    cls = isCurrent ? 'bg-indigo-600 text-white ring-2 ring-indigo-400' :
+                          isAnswered ? 'bg-slate-700 text-indigo-300 border border-indigo-500/30' : 'bg-slate-900 text-slate-500 border border-slate-800';
+                }
+                const dot = document.createElement('button');
+                dot.className = `w-7 h-7 shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${cls}`;
+                dot.innerText = idx + 1;
+                dot.onclick = () => { currentExam.currentIndex = idx; renderCurrentQuestion(); };
+                container.appendChild(dot);
+            });
+        }
+
+        // TIMER
+        function startTimer() {
+            clearInterval(currentExam.timerInterval);
+            currentExam.timerInterval = setInterval(() => {
+                currentExam.timerSeconds--;
+                document.getElementById('timerDisplay').innerText = formatTime(Math.max(currentExam.timerSeconds, 0));
+                if (currentExam.timerSeconds <= 0) {
+                    clearInterval(currentExam.timerInterval);
+                    alert("⏰ Se acabó el tiempo. El simulacro se finalizará.");
+                    finishExam();
+                }
+            }, 1000);
+        }
+
+        // FINISH EXAM
+        function finishExamPrompt() {
+            // En modo revisión el botón solo vuelve al resumen
+            if (currentExam.reviewing) {
+                document.getElementById('activeExamArea').classList.add('hidden');
+                document.getElementById('examResultPanel').classList.remove('hidden');
+                return;
+            }
+            const unanswered = currentExam.questions.filter(q => !(currentExam.userAnswers[q.id] || []).length).length;
+            const msg = unanswered > 0
+                ? `Tienes ${unanswered} pregunta(s) sin responder. ¿Deseas finalizar el simulacro de todas formas?`
+                : "¿Estás seguro de que deseas finalizar el simulacro?";
+            if (confirm(msg)) finishExam();
+        }
+
+        function finishExam() {
+            if (!currentExam.active) return; // evita doble calificación
+            currentExam.active = false;
+            clearInterval(currentExam.timerInterval);
+
+            let correct = 0;
+            const byModule = {};
+            currentExam.questions.forEach(q => {
+                const userSel = currentExam.userAnswers[q.id] || [];
+                const ok = userSel.length === q.correct.length && userSel.every(val => q.correct.includes(val));
+                if (ok) correct++;
+                if (!byModule[q.module]) byModule[q.module] = { c: 0, t: 0 };
+                byModule[q.module].t++;
+                if (ok) byModule[q.module].c++;
+            });
+
+            const total = currentExam.questions.length;
+            const pct = Math.round((correct / total) * 100);
+            const elapsed = Math.round((Date.now() - currentExam.startedAt) / 1000);
+
+            document.getElementById('scorePercent').innerText = `${pct}%`;
+            document.getElementById('correctCount').innerText = correct;
+            document.getElementById('incorrectCount').innerText = total - correct;
+            document.getElementById('timeSpent').innerText = formatTime(elapsed);
+
+            document.getElementById('activeExamArea').classList.add('hidden');
+            document.getElementById('examResultPanel').classList.remove('hidden');
+
+            appData.examHistory.push({
+                date: new Date().toLocaleDateString(),
+                score: pct,
+                correct: correct,
+                total: total,
+                byModule: byModule
+            });
+            saveLocalStorageData();
+            updateMetricsView();
+        }
+
+        function reviewExamAnswers() {
+            currentExam.reviewing = true;
+            currentExam.currentIndex = 0;
+            document.getElementById('examResultPanel').classList.add('hidden');
+            document.getElementById('activeExamArea').classList.remove('hidden');
+            document.getElementById('timerContainer').classList.add('hidden');
+            document.getElementById('finishBtn').innerText = 'Volver al Resumen';
+            renderCurrentQuestion();
+        }
+
+        function resetToConfig() {
+            clearInterval(currentExam.timerInterval);
+            currentExam.active = false;
+            currentExam.reviewing = false;
+            document.getElementById('examResultPanel').classList.add('hidden');
+            document.getElementById('activeExamArea').classList.add('hidden');
+            document.getElementById('examConfigPanel').classList.remove('hidden');
+        }
+
+        // REPASO SECTION
+        function renderReviewSection() {
+            const filter = document.getElementById('reviewModuleFilter').value;
+            const cardContainer = document.getElementById('flashcardsContainer');
+            const summaryContainer = document.getElementById('summariesContainer');
+
+            let cards = appData.flashcards || [];
+            let sums = appData.summaries || [];
+
+            if (filter !== 'ALL') {
+                cards = cards.filter(c => c.module === filter);
+                sums = sums.filter(s => s.module === filter);
+            }
+
+            if (cards.length === 0) {
+                cardContainer.innerHTML = `<div class="col-span-full text-slate-500 text-sm italic">No hay tarjetas registradas para este módulo.</div>`;
+            } else {
+                cardContainer.innerHTML = cards.map(c => `
+                    <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 hover:border-indigo-500/50 transition">
+                        <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">${escapeHtml(c.module)}</span>
+                        <h4 class="font-bold text-white text-base mt-1 mb-2">${escapeHtml(c.title)}</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(c.body)}</p>
+                    </div>`).join('');
+            }
+
+            if (sums.length === 0) {
+                summaryContainer.innerHTML = `<div class="text-slate-500 text-sm italic">No hay resúmenes cargados para este módulo.</div>`;
+            } else {
+                summaryContainer.innerHTML = sums.map(s => `
+                    <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-indigo-300 text-base">${escapeHtml(s.title)}</h4>
+                            <span class="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">${escapeHtml(s.module)}</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${escapeHtml(s.content)}</p>
+                    </div>`).join('');
+            }
+        }
+
+        // METRICS
+        function updateMetricsView() {
+            const hist = appData.examHistory || [];
+            document.getElementById('totalQuestionsInBank').innerText = appData.questions.length;
+            document.getElementById('totalExamsTaken').innerText = hist.length;
+
+            const avg = hist.length
+                ? Math.round(hist.reduce((a, b) => a + b.score, 0) / hist.length)
+                : 0;
+            document.getElementById('averageScore').innerText = `${avg}%`;
+
+            // Desglose por módulo (dinámico)
+            const box = document.getElementById('moduleBreakdown');
+            box.innerHTML = MODULES.map(mod => {
+                const bank = appData.questions.filter(q => q.module === mod).length;
+                let c = 0, t = 0;
+                hist.forEach(h => { if (h.byModule && h.byModule[mod]) { c += h.byModule[mod].c; t += h.byModule[mod].t; } });
+                const pct = t ? Math.round((c / t) * 100) : 0;
+                const color = !t ? 'bg-slate-600' : pct >= 70 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+                const label = t ? `${pct}% (${c}/${t} correctas)` : 'Sin datos';
+                return `
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-300">${escapeHtml(mod)} <span class="text-slate-500 font-normal">· ${bank} en banco</span></span>
+                            <span class="text-slate-400">${label}</span>
+                        </div>
+                        <div class="w-full bg-slate-900 rounded-full h-2.5">
+                            <div class="${color} h-2.5 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // BACKUP IMPORT / EXPORT (JSON)
+        async function exportJSONBackup() {
+            const json = JSON.stringify(appData, null, 2);
+            const filename = `ENAM_MedSuite_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            try {
+                const dl = window.claude ? await window.claude.use("downloads") : null;
+                if (dl) { await dl.save({ filename, data: json }); return; }
+            } catch (e) { if (e && e.code === 'cancelled') return; }
+            // Respaldo: descarga normal (archivo local) o copiar al portapapeles
+            try {
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename;
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } catch (e) {
+                try { await navigator.clipboard.writeText(json); alert("Backup copiado al portapapeles."); }
+                catch (e2) { alert("No se pudo descargar el backup en este entorno."); }
+            }
+        }
+
+        // Fusiona por id (si el id ya existe se reemplaza; si no, se agrega)
+        function mergeById(current, incoming) {
+            const map = new Map((current || []).map(x => [x.id, x]));
+            (incoming || []).forEach(x => map.set(x.id, x));
+            return [...map.values()];
+        }
+
+        function importJSONBackup(event) {
+            const input = event.target;
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imp = JSON.parse(e.target.result);
+                    const hasAny = ['questions', 'flashcards', 'summaries', 'examHistory'].some(k => Array.isArray(imp[k]));
+                    if (!hasAny) {
+                        alert("El archivo JSON no posee la estructura adecuada (se esperaba questions, flashcards o summaries).");
+                        return;
+                    }
+                    const before = appData.questions.length;
+                    appData.questions   = mergeById(appData.questions,   imp.questions);
+                    appData.flashcards  = mergeById(appData.flashcards,  imp.flashcards);
+                    appData.summaries   = mergeById(appData.summaries,   imp.summaries);
+                    if (Array.isArray(imp.examHistory) && imp.examHistory.length) {
+                        appData.examHistory = [...(appData.examHistory || []), ...imp.examHistory];
+                    }
+                    saveLocalStorageData();
+                    renderReviewSection();
+                    updateMetricsView();
+                    alert(`¡Datos importados con éxito! Preguntas en banco: ${before} → ${appData.questions.length}.`);
+                } catch (err) {
+                    alert("Error al leer el archivo JSON: " + err.message);
+                } finally {
+                    input.value = ''; // permite volver a cargar el mismo archivo
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // LOCAL STORAGE
+        function saveLocalStorageData() {
+            safeStorage.set('ENAM_MEDSUITE_DATA', JSON.stringify(appData));
+        }
+
+        function loadLocalStorageData() {
+            const local = safeStorage.get('ENAM_MEDSUITE_DATA');
+            if (!local) return;
+            try {
+                const saved = JSON.parse(local);
+                appData = {
+                    questions:   Array.isArray(saved.questions)   ? saved.questions   : appData.questions,
+                    flashcards:  Array.isArray(saved.flashcards)  ? saved.flashcards  : appData.flashcards,
+                    summaries:   Array.isArray(saved.summaries)   ? saved.summaries   : appData.summaries,
+                    examHistory: Array.isArray(saved.examHistory) ? saved.examHistory : []
+                };
+            } catch (e) {
+                console.error("Local load failed", e);
+            }
+        }
+    </script>
+</body>
+</html>
